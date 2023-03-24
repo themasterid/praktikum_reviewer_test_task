@@ -14,10 +14,10 @@ class Record:
         self.amount = amount
         # Тут можно лучше, избавится от NOT немного изменив логику.
         self.date = (
-            dt.datetime.now().date() if
-            not
-            # Хорошим тоном будет выносить формат даты в константу
-            date else dt.datetime.strptime(date, '%d.%m.%Y').date())
+            dt.datetime.strptime(date, '%d.%m.%Y').date()
+            if date
+            else dt.datetime.now().date()
+        )
         # Желательно держать переменные в одном месте,
         # не раскидывая их по телу класса.
         self.comment = comment
@@ -53,24 +53,15 @@ class Calculator:
         return today_stats
 
     def get_week_stats(self):
-        week_stats = 0
         # Отличное решение вынести дату в отдельную переменную!
         # Что бы все было более очевидно, попробуем использовать
         # timedelta в выборке недельного диапазона.
         today = dt.datetime.now().date()
-        # Тут тоже давай попробуем сделать все более лаконично применив
-        # метод sum и list comprehension. Тем самым попробуем избавится от
-        # лишней переменой week_stats.
-        # Условие можно сократить в конструкцию А <= B <= C
-        for record in self.records:
-            if (
-                (today - record.date).days < 7 and
-                (today - record.date).days >= 0
-            ):
-                week_stats += record.amount
-        # Тут можно смоле пользоваться такой конструкцией
-        # return sum(выборка по датам)
-        return week_stats
+        return sum(
+            record.amount
+            for record in self.records
+            if ((today - record.date).days < 7 and (today - record.date).days >= 0)
+        )
 
 
 class CaloriesCalculator(Calculator):
